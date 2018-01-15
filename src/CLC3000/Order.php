@@ -19,7 +19,16 @@ namespace Dkarlovi\CLC3000;
 interface Order
 {
     /**
-     * @param array $spec
+     * @return string
      */
-    public function addTransactionFromLoaderSpec(array $spec): void;
+    public function getId(): string;
+
+    /**
+     * @param array $spec
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return Transaction
+     */
+    public function addTransactionFromLoaderSpec(array $spec): Transaction;
 }

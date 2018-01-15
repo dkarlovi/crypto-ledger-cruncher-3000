@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Ledger;
 
+use Dkarlovi\CLC3000\Asset;
 use Dkarlovi\CLC3000\Ledger;
 use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Order;
@@ -23,46 +24,56 @@ use Dkarlovi\CLC3000\Transaction;
  */
 class FifoLedger implements Ledger
 {
-    /** @var Order[] */
+    /**
+     * @var Order[]
+     */
     private $orders = [];
+
+    /**
+     * @var Asset[]
+     */
+    private $assets = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function addTransactionFromLoaderSpec(array $spec): void
+    {
+        $id = $spec[Loader::ORDER];
+        if (false === array_key_exists($id, $this->orders)) {
+            $class = $spec[Loader::ORDER_CLASS];
+            $type = $spec[Loader::ORDER_TYPE];
+            $pair = $spec[Loader::ORDER_PAIR];
+
+            $this->orders[$id] = new $class($id, $type, $pair);
+        }
+
+        $order = $this->orders[$id];
+        $transaction = $order->addTransactionFromLoaderSpec($spec);
+        $this->adjustAssets($order, $transaction);
+    }
 
     /**
      * @return Order[]
      */
     public function getOrders(): array
     {
-        // TODO: Implement getOrders() method.
+        return $this->orders;
     }
 
     /**
-     * @return Transaction[]
+     * @return Asset[]
      */
-    public function getTransactions(): array
+    public function getAssets(): array
     {
-        // TODO: Implement getTransactions() method.
+        return $this->assets;
     }
 
     /**
+     * @param Order       $order
      * @param Transaction $transaction
      */
-    public function addTransaction(Transaction $transaction): void
+    private function adjustAssets(Order $order, Transaction $transaction)
     {
-        // TODO: Implement addTransaction() method.
-    }
-
-    /**
-     * @param array $spec
-     */
-    public function addTransactionFromLoaderSpec(array $spec): void
-    {
-        $id = $spec[Loader::ORDER];
-        if (false === array_key_exists($id, $this->orders)) {
-            $orderClass = $spec[Loader::ORDER_CLASS];
-
-            $order = new $orderClass($id);
-            $this->orders[$id] = $order;
-        }
-
-        $this->orders[$id]->addTransactionFromLoaderSpec($spec);
     }
 }

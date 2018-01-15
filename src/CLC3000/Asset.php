@@ -14,12 +14,8 @@ declare(strict_types=1);
 namespace Dkarlovi\CLC3000;
 
 /**
- * Interface Transaction.
+ * Interface Asset.
  */
-interface Transaction
+interface Asset
 {
-    /**
-     * @return string
-     */
-    public function getId(): string;
 }

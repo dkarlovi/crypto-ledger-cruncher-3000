@@ -34,7 +34,7 @@ class BasicTransaction implements Transaction
     /**
      * @var \DateTimeInterface
      */
-    private $timestamp;
+    private $time;
 
     /**
      * @var float
@@ -59,9 +59,15 @@ class BasicTransaction implements Transaction
     /**
      * @param string $id
      */
-    public function __construct(string $id)
+    public function __construct(string $id, Order $order, \DateTimeInterface $time, float $price, float $cost, float $fee, float $volume)
     {
         $this->id = $id;
+        $this->order = $order;
+        $this->time = $time;
+        $this->price = $price;
+        $this->cost = $cost;
+        $this->fee = $fee;
+        $this->volume = $volume;
     }
 
     /**
@@ -70,13 +76,5 @@ class BasicTransaction implements Transaction
     public function getId(): string
     {
         return $this->id;
-    }
-
-    /**
-     * @return Order
-     */
-    public function getOrder(): Order
-    {
-        return $this->order;
     }
 }

@@ -20,13 +20,22 @@ use Dkarlovi\CLC3000\File\File;
  */
 interface Loader
 {
+    public const ORDER_CLASS = 'order_class';
+    public const ORDER_TYPE = 'order_type';
+    public const ORDER_PAIR = 'order_pair';
     public const TRANSACTION = 'transaction';
     public const ORDER = 'order';
-    public const ORDER_CLASS = 'order_class';
+    public const TIME = 'time';
+    public const PRICE = 'price';
+    public const COST = 'cost';
+    public const FEE = 'fee';
+    public const VOLUME = 'volume';
 
     /**
      * @param File   $file
      * @param Ledger $ledger
+     *
+     * @throws \InvalidArgumentException
      *
      * @return void
      */

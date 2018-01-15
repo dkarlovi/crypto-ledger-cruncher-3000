@@ -59,12 +59,7 @@ class KrakenLoader implements Loader
     ];
 
     /**
-     * @param File   $file
-     * @param Ledger $ledger
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return void
+     * @inheritdoc
      */
     public function loadIntoLedger(File $file, Ledger $ledger): void
     {
@@ -115,8 +110,15 @@ class KrakenLoader implements Loader
         $row = \array_combine(self::$header, $row);
 
         $out = [
+            self::ORDER_PAIR => $row[self::KRAKEN_PAIR],
+            self::ORDER_TYPE => $row[self::KRAKEN_ORDER_TYPE],
             self::TRANSACTION => $row[self::KRAKEN_TRANSACTION],
             self::ORDER => $row[self::KRAKEN_ORDER],
+            self::TIME => new \DateTimeImmutable($row[self::KRAKEN_TIME], new \DateTimeZone('UTC')),
+            self::PRICE => (float) $row[self::KRAKEN_PRICE],
+            self::COST => (float) $row[self::KRAKEN_COST],
+            self::FEE => (float) $row[self::KRAKEN_FEE],
+            self::VOLUME => (float) $row[self::KRAKEN_VOLUME],
         ];
 
         switch ($row[self::KRAKEN_TYPE]) {

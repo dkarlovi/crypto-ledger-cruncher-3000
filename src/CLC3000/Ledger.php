@@ -20,6 +20,18 @@ interface Ledger
 {
     /**
      * @param array $spec
+     *
+     * @throws \InvalidArgumentException
      */
     public function addTransactionFromLoaderSpec(array $spec): void;
+
+    /**
+     * @return Order[]
+     */
+    public function getOrders(): array;
+
+    /**
+     * @return Asset[]
+     */
+    public function getAssets(): array;
 }

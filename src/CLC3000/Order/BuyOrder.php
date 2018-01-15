@@ -20,24 +20,17 @@ use Dkarlovi\CLC3000\Order;
  */
 class BuyOrder implements Order
 {
-    /**
-     * @var string
-     */
-    private $id;
+    use OrderTrait;
 
     /**
      * @param string $id
+     * @param string $type
+     * @param string $pair
      */
-    public function __construct(string $id)
+    public function __construct(string $id, string $type, string $pair)
     {
         $this->id = $id;
-    }
-
-    /**
-     * @param array $spec
-     */
-    public function addTransactionFromLoaderSpec(array $spec): void
-    {
-        echo 'buy';
+        $this->type = $type;
+        $this->pair = $pair;
     }
 }
