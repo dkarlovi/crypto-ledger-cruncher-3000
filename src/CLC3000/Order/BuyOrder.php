@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Order;
 
+use Dkarlovi\CLC3000\AssetPair;
 use Dkarlovi\CLC3000\Order;
 
 /**
@@ -23,11 +24,11 @@ class BuyOrder implements Order
     use OrderTrait;
 
     /**
-     * @param string $id
-     * @param string $type
-     * @param string $pair
+     * @param string    $id
+     * @param string    $type
+     * @param AssetPair $pair
      */
-    public function __construct(string $id, string $type, string $pair)
+    public function __construct(string $id, string $type, AssetPair $pair)
     {
         $this->id = $id;
         $this->type = $type;

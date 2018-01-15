@@ -15,8 +15,8 @@ namespace Dkarlovi\CLC3000\Command;
 
 use Dkarlovi\CLC3000\File\File;
 use Dkarlovi\CLC3000\Ledger\FifoLedger;
-use Dkarlovi\CLC3000\Loader;
-use Dkarlovi\CLC3000\Loader\KrakenLoader;
+use Dkarlovi\CLC3000\Ledger\Loader\KrakenLedgerLoader;
+use Dkarlovi\CLC3000\LedgerLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class CrunchCommand extends Command
 {
     private static $exchanges = [
-        'kraken' => KrakenLoader::class,
+        'kraken' => KrakenLedgerLoader::class,
     ];
 
     /**
@@ -58,7 +58,7 @@ class CrunchCommand extends Command
 
         $ledger = new FifoLedger();
 
-        /** @var Loader $loader */
+        /** @var LedgerLoader $loader */
         $loader = new self::$exchanges[$exchange]();
         try {
             $loader->loadIntoLedger(new File($path), $ledger);

@@ -14,26 +14,24 @@ declare(strict_types=1);
 namespace Dkarlovi\CLC3000;
 
 /**
- * Interface Order.
+ * Interface AssetPair.
  */
-interface Order
+interface AssetPair
 {
     /**
-     * @return string
+     * @return Asset
      */
-    public function getId(): string;
+    public function getFrom(): Asset;
 
     /**
-     * @return AssetPair
+     * @return Asset
      */
-    public function getPair(): AssetPair;
+    public function getTo(): Asset;
 
     /**
-     * @param array $spec
+     * @param AssetPair $pair
      *
-     * @throws \InvalidArgumentException
-     *
-     * @return Transaction
+     * @return bool
      */
-    public function addTransactionFromLoaderSpec(array $spec): Transaction;
+    public function equals(self $pair): bool;
 }

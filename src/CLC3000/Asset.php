@@ -18,4 +18,15 @@ namespace Dkarlovi\CLC3000;
  */
 interface Asset
 {
+    /**
+     * @param Asset $asset
+     *
+     * @return bool
+     */
+    public function equals(self $asset): bool;
+
+    /**
+     * @return string
+     */
+    public function getValue(): string;
 }

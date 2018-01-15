@@ -15,7 +15,7 @@ namespace Dkarlovi\CLC3000\Ledger;
 
 use Dkarlovi\CLC3000\Asset;
 use Dkarlovi\CLC3000\Ledger;
-use Dkarlovi\CLC3000\Loader;
+use Dkarlovi\CLC3000\LedgerLoader;
 use Dkarlovi\CLC3000\Order;
 use Dkarlovi\CLC3000\Transaction;
 
@@ -39,11 +39,11 @@ class FifoLedger implements Ledger
      */
     public function addTransactionFromLoaderSpec(array $spec): void
     {
-        $id = $spec[Loader::ORDER];
+        $id = $spec[LedgerLoader::ORDER];
         if (false === array_key_exists($id, $this->orders)) {
-            $class = $spec[Loader::ORDER_CLASS];
-            $type = $spec[Loader::ORDER_TYPE];
-            $pair = $spec[Loader::ORDER_PAIR];
+            $class = $spec[LedgerLoader::ORDER_CLASS];
+            $type = $spec[LedgerLoader::ORDER_TYPE];
+            $pair = $spec[LedgerLoader::ORDER_PAIR];
 
             $this->orders[$id] = new $class($id, $type, $pair);
         }
@@ -72,8 +72,18 @@ class FifoLedger implements Ledger
     /**
      * @param Order       $order
      * @param Transaction $transaction
+     *
+     * @throws \InvalidArgumentException
      */
     private function adjustAssets(Order $order, Transaction $transaction)
     {
+        switch (\get_class($order)) {
+            case Order\BuyOrder::class:
+                break;
+            case Order\SellOrder::class:
+                break;
+            default:
+                throw new \InvalidArgumentException('Unknown order type');
+        }
     }
 }

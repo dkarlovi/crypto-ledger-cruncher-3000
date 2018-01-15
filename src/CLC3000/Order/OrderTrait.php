@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Order;
 
-use Dkarlovi\CLC3000\Loader;
+use Dkarlovi\CLC3000\AssetPair;
+use Dkarlovi\CLC3000\LedgerLoader;
 use Dkarlovi\CLC3000\Transaction;
 
 /**
@@ -47,7 +48,7 @@ trait OrderTrait
     protected $type;
 
     /**
-     * @var string
+     * @var AssetPair
      */
     protected $pair;
 
@@ -69,6 +70,14 @@ trait OrderTrait
         $transaction = $this->addTransactionFromSpec($spec);
 
         return $transaction;
+    }
+
+    /**
+     * @return AssetPair
+     */
+    public function getPair(): AssetPair
+    {
+        return $this->pair;
     }
 
     /**
@@ -99,18 +108,18 @@ trait OrderTrait
     private function setMetadata(array $spec): void
     {
         // TODO: better error messages
-        if (static::class !== $spec[Loader::ORDER_CLASS]) {
+        if (static::class !== $spec[LedgerLoader::ORDER_CLASS]) {
             throw new \InvalidArgumentException('Order type changed');
         }
-        if ($this->type !== $spec[Loader::ORDER_TYPE]) {
+        if ($this->type !== $spec[LedgerLoader::ORDER_TYPE]) {
             throw new \InvalidArgumentException('Order type changed');
         }
-        if ($this->pair !== $spec[Loader::ORDER_PAIR]) {
+        if (false === $this->pair->equals($spec[LedgerLoader::ORDER_PAIR])) {
             throw new \InvalidArgumentException('Order pair changed');
         }
 
-        $this->setStart($spec[Loader::TIME]);
-        $this->setEnd($spec[Loader::TIME]);
+        $this->setStart($spec[LedgerLoader::TIME]);
+        $this->setEnd($spec[LedgerLoader::TIME]);
     }
 
     /**
@@ -121,13 +130,13 @@ trait OrderTrait
     private function addTransactionFromSpec(array $spec): Transaction
     {
         $transaction = new Transaction\BasicTransaction(
-            $spec[Loader::TRANSACTION],
+            $spec[LedgerLoader::TRANSACTION],
             $this,
-            $spec[Loader::TIME],
-            $spec[Loader::PRICE],
-            $spec[Loader::COST],
-            $spec[Loader::FEE],
-            $spec[Loader::VOLUME]
+            $spec[LedgerLoader::TIME],
+            $spec[LedgerLoader::PRICE],
+            $spec[LedgerLoader::COST],
+            $spec[LedgerLoader::FEE],
+            $spec[LedgerLoader::VOLUME]
         );
 
         $this->transactions[] = $transaction;

@@ -18,7 +18,7 @@ use Dkarlovi\CLC3000\File\File;
 /**
  * Interface Loader.
  */
-interface Loader
+interface LedgerLoader
 {
     public const ORDER_CLASS = 'order_class';
     public const ORDER_TYPE = 'order_type';

@@ -11,18 +11,20 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Dkarlovi\CLC3000\Loader;
+namespace Dkarlovi\CLC3000\Ledger\Loader;
 
+use Dkarlovi\CLC3000\Asset;
+use Dkarlovi\CLC3000\AssetPair;
 use Dkarlovi\CLC3000\File\File;
 use Dkarlovi\CLC3000\Ledger;
-use Dkarlovi\CLC3000\Loader;
+use Dkarlovi\CLC3000\LedgerLoader;
 use Dkarlovi\CLC3000\Order\BuyOrder;
 use Dkarlovi\CLC3000\Order\SellOrder;
 
 /**
  * Class KrakenLoader.
  */
-class KrakenLoader implements Loader
+class KrakenLedgerLoader implements LedgerLoader
 {
     private const KRAKEN_TRANSACTION = 'txid';
     private const KRAKEN_ORDER = 'ordertxid';
@@ -56,6 +58,23 @@ class KrakenLoader implements Loader
         self::KRAKEN_MARGIN,
         self::KRAKEN_MISC,
         self::KRAKEN_LEDGERS,
+    ];
+
+    private static $crypto = [
+        'BCH' => 'BCH',
+        'XXBT' => 'BTC',
+        'XETC' => 'ETC',
+        'XETH' => 'ETH',
+        'XLTC' => 'LTC',
+        'XXMR' => 'MNR',
+        'XXRP' => 'XRP',
+        'XREP' => 'REP',
+        'XZEC' => 'ZEC',
+    ];
+
+    private static $fiat = [
+        'ZEUR' => 'EUR',
+        'EUR' => 'EUR',
     ];
 
     /**
@@ -109,8 +128,9 @@ class KrakenLoader implements Loader
 
         $row = \array_combine(self::$header, $row);
 
+        // TODO: convert to a DTO
         $out = [
-            self::ORDER_PAIR => $row[self::KRAKEN_PAIR],
+            self::ORDER_PAIR => $this->normalizePair($row[self::KRAKEN_PAIR]),
             self::ORDER_TYPE => $row[self::KRAKEN_ORDER_TYPE],
             self::TRANSACTION => $row[self::KRAKEN_TRANSACTION],
             self::ORDER => $row[self::KRAKEN_ORDER],
@@ -135,5 +155,40 @@ class KrakenLoader implements Loader
         }
 
         return $out;
+    }
+
+    /**
+     * Transforms "XXBTZEUR" to AssetPair(Asset('BTC'), Asset('EUR')).
+     *
+     * TODO: do this much better, this is very fragile.
+     *
+     * @param string $pair
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return AssetPair
+     */
+    private function normalizePair(string $pair): AssetPair
+    {
+        $assets = [];
+
+        while ($pair) {
+            foreach (self::$crypto as $alias => $name) {
+                if (0 === mb_strpos($pair, $alias)) {
+                    $assets[] = new Asset\CryptoAsset($name);
+                    $pair = \mb_substr($pair, \mb_strlen($alias));
+                    continue;
+                }
+            }
+            foreach (self::$fiat as $alias => $name) {
+                if (0 === mb_strpos($pair, $alias)) {
+                    $assets[] = new Asset\FiatAsset($name);
+                    $pair = \mb_substr($pair, \mb_strlen($alias));
+                    continue;
+                }
+            }
+        }
+
+        return new Asset\AssetPair($assets[0], $assets[1]);
     }
 }
