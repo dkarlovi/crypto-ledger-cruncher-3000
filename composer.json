@@ -1,0 +1,22 @@
+{
+    "name": "dkarlovi/clc3000",
+    "license": "MIT",
+    "description": "Crypto exchange ledger reader and gain/loss calculator",
+    "autoload": {
+        "psr-4": {
+            "Dkarlovi\\CLC3000\\": "src/CLC3000"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dkarlovi\\CLC3000\\Tests\\": "tests/CLC3000"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "^7.1",
+        "symfony/console": "~3.0|~4.0"
+    }
+}
