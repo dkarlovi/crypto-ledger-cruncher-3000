@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Console;
 
+use Dkarlovi\CLC3000\Command\CrunchCommand;
 use Symfony\Component\Console\Application as BaseApplication;
 
 /**
@@ -20,4 +21,22 @@ use Symfony\Component\Console\Application as BaseApplication;
  */
 class Application extends BaseApplication
 {
+    /**
+     * {@inheritdoc}
+     *
+     * @throws \Symfony\Component\Console\Exception\LogicException
+     */
+    protected function getDefaultCommands()
+    {
+        /** @var \Symfony\Component\Console\Command\Command[] $commands */
+        $commands = array_merge(
+            parent::getDefaultCommands(),
+            [
+                new CrunchCommand(),
+            ]
+        );
+        $this->setDefaultCommand('crunch');
+
+        return $commands;
+    }
 }
