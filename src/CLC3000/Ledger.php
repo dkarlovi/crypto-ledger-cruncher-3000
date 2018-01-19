@@ -13,17 +13,17 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000;
 
+use Dkarlovi\CLC3000\File\File;
+
 /**
  * Interface Ledger.
  */
 interface Ledger
 {
     /**
-     * @param array $spec
-     *
-     * @throws \InvalidArgumentException
+     * @param File $file
      */
-    public function addTransactionFromLoaderSpec(array $spec): void;
+    public function load(File $file): void;
 
     /**
      * @return Order[]

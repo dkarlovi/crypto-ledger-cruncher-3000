@@ -18,7 +18,7 @@ use Dkarlovi\CLC3000\File\File;
 /**
  * Interface Loader.
  */
-interface LedgerLoader
+interface Loader
 {
     public const ORDER_CLASS = 'order_class';
     public const ORDER_TYPE = 'order_type';
@@ -32,12 +32,13 @@ interface LedgerLoader
     public const VOLUME = 'volume';
 
     /**
-     * @param File   $file
-     * @param Ledger $ledger
+     * @param File     $file
+     * @param callable $processor
      *
      * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      *
      * @return void
      */
-    public function loadIntoLedger(File $file, Ledger $ledger): void;
+    public function load(File $file, callable $processor): void;
 }

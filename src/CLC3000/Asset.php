@@ -18,15 +18,27 @@ namespace Dkarlovi\CLC3000;
  */
 interface Asset
 {
+    public const CRYPTO_BCH = 'BCH';
+    public const CRYPTO_BTC = 'BTC';
+    public const CRYPTO_ETC = 'ETC';
+    public const CRYPTO_ETH = 'ETH';
+    public const CRYPTO_LTC = 'LTC';
+    public const CRYPTO_MNR = 'MNR';
+    public const CRYPTO_REP = 'REP';
+    public const CRYPTO_XRP = 'XRP';
+    public const CRYPTO_ZEC = 'ZEC';
+
+    public const FIAT_EUR = 'EUR';
+
+    /**
+     * @return string
+     */
+    public function getValue(): string;
+
     /**
      * @param Asset $asset
      *
      * @return bool
      */
     public function equals(self $asset): bool;
-
-    /**
-     * @return string
-     */
-    public function getValue(): string;
 }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Dkarlovi\CLC3000\Order;
 
 use Dkarlovi\CLC3000\AssetPair;
-use Dkarlovi\CLC3000\LedgerLoader;
+use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Transaction;
 
 /**
@@ -30,27 +30,27 @@ trait OrderTrait
     /**
      * @var Transaction[]
      */
-    protected $transactions = [];
+    private $transactions = [];
 
     /**
      * @var \DateTimeInterface
      */
-    protected $start;
+    private $start;
 
     /**
      * @var \DateTimeInterface
      */
-    protected $end;
+    private $end;
 
     /**
      * @var string
      */
-    protected $type;
+    private $type;
 
     /**
      * @var AssetPair
      */
-    protected $pair;
+    private $pair;
 
     /**
      * @return string
@@ -81,23 +81,25 @@ trait OrderTrait
     }
 
     /**
-     * @param \DateTimeInterface $time
+     * @param array $spec
+     *
+     * @return Transaction
      */
-    protected function setStart(\DateTimeInterface $time): void
+    private function addTransactionFromSpec(array $spec): Transaction
     {
-        if (null === $this->start || $time < $this->start) {
-            $this->start = $time;
-        }
-    }
+        $transaction = new Transaction\BasicTransaction(
+            $spec[Loader::TRANSACTION],
+            $this,
+            $spec[Loader::TIME],
+            $spec[Loader::PRICE],
+            $spec[Loader::COST],
+            $spec[Loader::FEE],
+            $spec[Loader::VOLUME]
+        );
 
-    /**
-     * @param \DateTimeInterface $time
-     */
-    protected function setEnd(\DateTimeInterface $time): void
-    {
-        if (null === $this->end || $time > $this->end) {
-            $this->end = $time;
-        }
+        $this->transactions[] = $transaction;
+
+        return $transaction;
     }
 
     /**
@@ -108,39 +110,37 @@ trait OrderTrait
     private function setMetadata(array $spec): void
     {
         // TODO: better error messages
-        if (static::class !== $spec[LedgerLoader::ORDER_CLASS]) {
+        if (static::class !== $spec[Loader::ORDER_CLASS]) {
             throw new \InvalidArgumentException('Order type changed');
         }
-        if ($this->type !== $spec[LedgerLoader::ORDER_TYPE]) {
+        if ($this->type !== $spec[Loader::ORDER_TYPE]) {
             throw new \InvalidArgumentException('Order type changed');
         }
-        if (false === $this->pair->equals($spec[LedgerLoader::ORDER_PAIR])) {
+        if (false === $this->pair->equals($spec[Loader::ORDER_PAIR])) {
             throw new \InvalidArgumentException('Order pair changed');
         }
 
-        $this->setStart($spec[LedgerLoader::TIME]);
-        $this->setEnd($spec[LedgerLoader::TIME]);
+        $this->setStart($spec[Loader::TIME]);
+        $this->setEnd($spec[Loader::TIME]);
     }
 
     /**
-     * @param array $spec
-     *
-     * @return Transaction
+     * @param \DateTimeInterface $time
      */
-    private function addTransactionFromSpec(array $spec): Transaction
+    private function setStart(\DateTimeInterface $time): void
     {
-        $transaction = new Transaction\BasicTransaction(
-            $spec[LedgerLoader::TRANSACTION],
-            $this,
-            $spec[LedgerLoader::TIME],
-            $spec[LedgerLoader::PRICE],
-            $spec[LedgerLoader::COST],
-            $spec[LedgerLoader::FEE],
-            $spec[LedgerLoader::VOLUME]
-        );
+        if (null === $this->start || $time < $this->start) {
+            $this->start = $time;
+        }
+    }
 
-        $this->transactions[] = $transaction;
-
-        return $transaction;
+    /**
+     * @param \DateTimeInterface $time
+     */
+    private function setEnd(\DateTimeInterface $time): void
+    {
+        if (null === $this->end || $time > $this->end) {
+            $this->end = $time;
+        }
     }
 }

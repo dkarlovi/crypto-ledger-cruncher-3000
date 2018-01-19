@@ -11,20 +11,19 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Dkarlovi\CLC3000\Ledger\Loader;
+namespace Dkarlovi\CLC3000\Loader;
 
 use Dkarlovi\CLC3000\Asset;
 use Dkarlovi\CLC3000\AssetPair;
 use Dkarlovi\CLC3000\File\File;
-use Dkarlovi\CLC3000\Ledger;
-use Dkarlovi\CLC3000\LedgerLoader;
+use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Order\BuyOrder;
 use Dkarlovi\CLC3000\Order\SellOrder;
 
 /**
  * Class KrakenLoader.
  */
-class KrakenLedgerLoader implements LedgerLoader
+class KrakenLoader implements Loader
 {
     private const KRAKEN_TRANSACTION = 'txid';
     private const KRAKEN_ORDER = 'ordertxid';
@@ -61,26 +60,26 @@ class KrakenLedgerLoader implements LedgerLoader
     ];
 
     private static $crypto = [
-        'BCH' => 'BCH',
-        'XXBT' => 'BTC',
-        'XETC' => 'ETC',
-        'XETH' => 'ETH',
-        'XLTC' => 'LTC',
-        'XXMR' => 'MNR',
-        'XXRP' => 'XRP',
-        'XREP' => 'REP',
-        'XZEC' => 'ZEC',
+        'BCH' => Asset::CRYPTO_BCH,
+        'XXBT' => Asset::CRYPTO_BTC,
+        'XETC' => Asset::CRYPTO_ETC,
+        'XETH' => Asset::CRYPTO_ETH,
+        'XLTC' => Asset::CRYPTO_LTC,
+        'XXMR' => Asset::CRYPTO_MNR,
+        'XREP' => Asset::CRYPTO_REP,
+        'XXRP' => Asset::CRYPTO_XRP,
+        'XZEC' => Asset::CRYPTO_ZEC,
     ];
 
     private static $fiat = [
-        'ZEUR' => 'EUR',
-        'EUR' => 'EUR',
+        'ZEUR' => Asset::FIAT_EUR,
+        'EUR' => Asset::FIAT_EUR,
     ];
 
     /**
      * @inheritdoc
      */
-    public function loadIntoLedger(File $file, Ledger $ledger): void
+    public function load(File $file, callable $processor): void
     {
         $header = false;
         $handle = fopen($file->getPathname(), 'rb');
@@ -93,9 +92,7 @@ class KrakenLedgerLoader implements LedgerLoader
 
             // loader compatible spec
             $spec = $this->createLoaderSpec($row);
-
-            // add transaction by spec
-            $ledger->addTransactionFromLoaderSpec($spec);
+            $processor($spec);
         }
 
         fclose($handle);

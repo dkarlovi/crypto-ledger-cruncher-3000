@@ -57,10 +57,23 @@ class BasicTransaction implements Transaction
     private $volume;
 
     /**
-     * @param string $id
+     * @param string             $id
+     * @param Order              $order
+     * @param \DateTimeInterface $time
+     * @param float              $price
+     * @param float              $cost
+     * @param float              $fee
+     * @param float              $volume
      */
-    public function __construct(string $id, Order $order, \DateTimeInterface $time, float $price, float $cost, float $fee, float $volume)
-    {
+    public function __construct(
+        string $id,
+        Order $order,
+        \DateTimeInterface $time,
+        float $price,
+        float $cost,
+        float $fee,
+        float $volume
+    ) {
         $this->id = $id;
         $this->order = $order;
         $this->time = $time;

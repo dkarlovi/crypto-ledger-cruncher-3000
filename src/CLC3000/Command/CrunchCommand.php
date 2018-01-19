@@ -15,8 +15,8 @@ namespace Dkarlovi\CLC3000\Command;
 
 use Dkarlovi\CLC3000\File\File;
 use Dkarlovi\CLC3000\Ledger\FifoLedger;
-use Dkarlovi\CLC3000\Ledger\Loader\KrakenLedgerLoader;
-use Dkarlovi\CLC3000\LedgerLoader;
+use Dkarlovi\CLC3000\Loader;
+use Dkarlovi\CLC3000\Loader\KrakenLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class CrunchCommand extends Command
 {
     private static $exchanges = [
-        'kraken' => KrakenLedgerLoader::class,
+        'kraken' => KrakenLoader::class,
     ];
 
     /**
@@ -54,14 +54,14 @@ class CrunchCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $exchange = $input->getArgument('exchange');
-        $path = $input->getArgument('path');
 
-        $ledger = new FifoLedger();
-
-        /** @var LedgerLoader $loader */
+        /** @var Loader $loader */
         $loader = new self::$exchanges[$exchange]();
+        $ledger = new FifoLedger($loader);
+
+        $path = $input->getArgument('path');
         try {
-            $loader->loadIntoLedger(new File($path), $ledger);
+            $ledger->load(new File($path));
         } catch (\Exception $exception) {
             throw new InvalidArgumentException($exception->getMessage(), $exception->getCode(), $exception);
         }
