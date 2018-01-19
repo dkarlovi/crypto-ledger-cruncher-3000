@@ -81,6 +81,7 @@ abstract class FunctionalTestCase extends TestCase
             Loader::VOLUME,
             Loader::COST,
             Loader::FEE,
+            Loader::PRICE,
         ];
 
         return new DummyLoader(function (array $row) use ($keys) {
@@ -119,10 +120,9 @@ abstract class FunctionalTestCase extends TestCase
     private function parsePair(string $pair): AssetPair
     {
         // TODO: this might have side-effects
-        if (false === mb_strpos('-', $pair)) {
+        if (false === mb_strpos($pair, '-')) {
             return new Asset\AssetPair(new Asset\CryptoAsset($pair), new Asset\CryptoAsset($pair));
         }
-
         [$from, $to] = explode('-', $pair);
 
         return new Asset\AssetPair(new Asset\CryptoAsset($from), new Asset\CryptoAsset($to));

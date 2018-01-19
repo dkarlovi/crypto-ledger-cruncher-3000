@@ -26,7 +26,7 @@ class FifoLedgerFunctionalTest extends FunctionalTestCase
      */
     public function getDataProvider(): array
     {
-        // order, transaction, type, pair, volume, cost, fee
+        // order, transaction, type, pair, volume, cost, fee, price
         return [
             [
                 [
@@ -40,6 +40,13 @@ class FifoLedgerFunctionalTest extends FunctionalTestCase
                     ['or1', 'tx2', 'deposit', 'EUR', 1500, 1500, 0],
                 ],
                 ['EUR' => 1595],
+            ],
+            [
+                [
+                    ['or1', 'tx1', 'deposit', 'EUR', 95, 100, 5],
+                    ['or2', 'tx2', 'buy', 'EUR-BTC', 0.1, 50, 5, 500],
+                ],
+                ['EUR' => 45, 'BTC' => 0.1],
             ],
         ];
     }
