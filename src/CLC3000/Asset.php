@@ -33,7 +33,7 @@ interface Asset
     /**
      * @return string
      */
-    public function getValue(): string;
+    public function getCode(): string;
 
     /**
      * @param Asset $asset

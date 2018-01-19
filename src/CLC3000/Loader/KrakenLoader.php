@@ -127,7 +127,6 @@ class KrakenLoader implements Loader
 
         // TODO: convert to a DTO
         $out = [
-            self::ORDER_PAIR => $this->normalizePair($row[self::KRAKEN_PAIR]),
             self::ORDER_TYPE => $row[self::KRAKEN_ORDER_TYPE],
             self::TRANSACTION => $row[self::KRAKEN_TRANSACTION],
             self::ORDER => $row[self::KRAKEN_ORDER],
@@ -137,7 +136,6 @@ class KrakenLoader implements Loader
             self::FEE => (float) $row[self::KRAKEN_FEE],
             self::VOLUME => (float) $row[self::KRAKEN_VOLUME],
         ];
-
         switch ($row[self::KRAKEN_TYPE]) {
             case self::KRAKEN_BUY:
                 $out[self::ORDER_CLASS] = BuyOrder::class;
@@ -151,41 +149,60 @@ class KrakenLoader implements Loader
                 );
         }
 
+        $out[self::ORDER_PAIR] = $this->normalizePair($row[self::KRAKEN_PAIR], $row[self::KRAKEN_TYPE]);
+
         return $out;
     }
 
     /**
-     * Transforms "XXBTZEUR" to AssetPair(Asset('BTC'), Asset('EUR')).
+     * Transforms "XXBTZEUR", sell to AssetPair(Asset('BTC'), Asset('EUR')).
+     * Transforms "XXBTZEUR", buy  to AssetPair(Asset('EUR'), Asset('BTC')).
      *
-     * TODO: do this much better, this is very fragile.
+     * Note that it's always "<Crypto><Fiat>", direction is used to determine what's happening.
      *
      * @param string $pair
+     * @param string $direction "buy" or "sell" (crypto for fiat)
      *
      * @throws \InvalidArgumentException
      *
      * @return AssetPair
      */
-    private function normalizePair(string $pair): AssetPair
+    private function normalizePair(string $pair, string $direction): AssetPair
     {
         $assets = [];
-
-        while ($pair) {
-            foreach (self::$crypto as $alias => $name) {
-                if (0 === mb_strpos($pair, $alias)) {
-                    $assets[] = new Asset\CryptoAsset($name);
-                    $pair = \mb_substr($pair, \mb_strlen($alias));
-                    continue;
-                }
-            }
-            foreach (self::$fiat as $alias => $name) {
-                if (0 === mb_strpos($pair, $alias)) {
-                    $assets[] = new Asset\FiatAsset($name);
-                    $pair = \mb_substr($pair, \mb_strlen($alias));
-                    continue;
-                }
+        foreach (self::$crypto as $alias => $name) {
+            if (0 === mb_strpos($pair, $alias)) {
+                $assets[] = new Asset\CryptoAsset($name);
+                $pair = \mb_substr($pair, \mb_strlen($alias));
+                continue;
             }
         }
+        foreach (self::$fiat as $alias => $name) {
+            if (0 === mb_strpos($pair, $alias)) {
+                $assets[] = new Asset\FiatAsset($name);
+                $pair = \mb_substr($pair, \mb_strlen($alias));
+                continue;
+            }
+        }
+        if ($pair) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid Kraken archive: invalid asset pair "%1$s"', $pair)
+            );
+        }
 
-        return new Asset\AssetPair($assets[0], $assets[1]);
+        switch ($direction) {
+            case self::KRAKEN_BUY:
+                $assetPair = new Asset\AssetPair($assets[1], $assets[0]);
+                break;
+            case self::KRAKEN_SELL:
+                $assetPair = new Asset\AssetPair($assets[0], $assets[1]);
+                break;
+            default:
+                throw new \InvalidArgumentException(
+                    sprintf('Invalid Kraken archive: invalid order direction "%1$s"', $direction)
+                );
+        }
+
+        return $assetPair;
     }
 }

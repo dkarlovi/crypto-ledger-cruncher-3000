@@ -19,6 +19,7 @@ use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Loader\KrakenLoader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -65,5 +66,12 @@ class CrunchCommand extends Command
         } catch (\Exception $exception) {
             throw new InvalidArgumentException($exception->getMessage(), $exception->getCode(), $exception);
         }
+
+        $table = new Table($output);
+        $table->setHeaders(['Asset', 'Volume']);
+        foreach ($ledger->getStatus() as $wallet) {
+            $table->addRow([$wallet->getAsset()->getCode(), $wallet->getTotal()]);
+        }
+        $table->render();
     }
 }

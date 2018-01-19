@@ -22,4 +22,14 @@ interface Transaction
      * @return string
      */
     public function getId(): string;
+
+    /**
+     * @return Amount
+     */
+    public function getWithdrawalAmount(): Amount;
+
+    /**
+     * @return Amount
+     */
+    public function getDepositAmount(): Amount;
 }

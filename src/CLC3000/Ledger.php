@@ -26,12 +26,7 @@ interface Ledger
     public function load(File $file): void;
 
     /**
-     * @return Order[]
+     * @return Wallet[]
      */
-    public function getOrders(): array;
-
-    /**
-     * @return Asset[]
-     */
-    public function getAssets(): array;
+    public function getStatus(): array;
 }

@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Transaction;
 
+use Dkarlovi\CLC3000\Amount;
 use Dkarlovi\CLC3000\Order;
 use Dkarlovi\CLC3000\Transaction;
+use Dkarlovi\CLC3000\Wallet\Amount\AmountSegment;
+use Dkarlovi\CLC3000\Wallet\Amount\SegmentedAmount;
 
 /**
  * Class SimpleTransaction.
@@ -89,5 +92,29 @@ class BasicTransaction implements Transaction
     public function getId(): string
     {
         return $this->id;
+    }
+
+    /**
+     * @return Amount
+     */
+    public function getWithdrawalAmount(): Amount
+    {
+        return new SegmentedAmount(
+            [
+                new AmountSegment($this->cost, $this->volume),
+            ]
+        );
+    }
+
+    /**
+     * @return Amount
+     */
+    public function getDepositAmount(): Amount
+    {
+        return new SegmentedAmount(
+            [
+                new AmountSegment($this->volume, $this->cost),
+            ]
+        );
     }
 }

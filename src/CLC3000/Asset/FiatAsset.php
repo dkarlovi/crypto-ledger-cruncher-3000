@@ -40,13 +40,13 @@ class FiatAsset implements Asset
      */
     public function equals(Asset $asset): bool
     {
-        return $asset->getValue() === $this->asset;
+        return $asset->getCode() === $this->asset;
     }
 
     /**
      * @return string
      */
-    public function getValue(): string
+    public function getCode(): string
     {
         return $this->asset;
     }
