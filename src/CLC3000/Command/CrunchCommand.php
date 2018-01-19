@@ -69,7 +69,7 @@ class CrunchCommand extends Command
 
         $table = new Table($output);
         $table->setHeaders(['Asset', 'Volume']);
-        foreach ($ledger->getStatus() as $wallet) {
+        foreach ($ledger->getWallets() as $wallet) {
             $table->addRow([$wallet->getAsset()->getCode(), $wallet->getTotal()]);
         }
         $table->render();

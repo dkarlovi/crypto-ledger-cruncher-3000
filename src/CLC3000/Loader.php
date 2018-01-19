@@ -32,13 +32,13 @@ interface Loader
     public const VOLUME = 'volume';
 
     /**
-     * @param File     $file
-     * @param callable $processor
+     * @param File|array $source
+     * @param callable   $processor
      *
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      *
      * @return void
      */
-    public function load(File $file, callable $processor): void;
+    public function load($source, callable $processor): void;
 }

@@ -18,6 +18,7 @@ use Dkarlovi\CLC3000\AssetPair;
 use Dkarlovi\CLC3000\File\File;
 use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Order\BuyOrder;
+use Dkarlovi\CLC3000\Order\DepositOrder;
 use Dkarlovi\CLC3000\Order\SellOrder;
 
 /**
@@ -41,6 +42,7 @@ class KrakenLoader implements Loader
 
     private const KRAKEN_BUY = 'buy';
     private const KRAKEN_SELL = 'sell';
+    private const KRAKEN_DEPOSIT = 'deposit';
 
     private static $count = 13;
     private static $header = [
@@ -78,8 +80,10 @@ class KrakenLoader implements Loader
 
     /**
      * @inheritdoc
+     *
+     * @param File $file
      */
-    public function load(File $file, callable $processor): void
+    public function load($file, callable $processor): void
     {
         $header = false;
         $handle = fopen($file->getPathname(), 'rb');
@@ -137,6 +141,9 @@ class KrakenLoader implements Loader
             self::VOLUME => (float) $row[self::KRAKEN_VOLUME],
         ];
         switch ($row[self::KRAKEN_TYPE]) {
+            case self::KRAKEN_DEPOSIT:
+                $out[self::ORDER_CLASS] = DepositOrder::class;
+                break;
             case self::KRAKEN_BUY:
                 $out[self::ORDER_CLASS] = BuyOrder::class;
                 break;
@@ -191,6 +198,9 @@ class KrakenLoader implements Loader
         }
 
         switch ($direction) {
+            case self::KRAKEN_DEPOSIT:
+                $assetPair = new Asset\AssetPair($assets[0], $assets[0]);
+                break;
             case self::KRAKEN_BUY:
                 $assetPair = new Asset\AssetPair($assets[1], $assets[0]);
                 break;

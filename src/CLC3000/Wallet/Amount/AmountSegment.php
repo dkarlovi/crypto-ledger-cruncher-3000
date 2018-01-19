@@ -24,7 +24,7 @@ class AmountSegment
     public $amount;
 
     /**
-     * @var float
+     * @var null|float
      */
     public $cost;
 
@@ -32,7 +32,7 @@ class AmountSegment
      * @param float $amount
      * @param float $cost
      */
-    public function __construct(float $amount, float $cost)
+    public function __construct(float $amount, float $cost = null)
     {
         $this->amount = $amount;
         $this->cost = $cost;

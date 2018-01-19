@@ -31,6 +31,8 @@ interface Wallet
     /**
      * @param Amount $amount
      *
+     * @throws \InvalidArgumentException
+     *
      * @return float New total
      */
     public function deposit(Amount $amount): float;

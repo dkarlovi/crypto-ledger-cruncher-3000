@@ -44,28 +44,56 @@ class SegmentedAmount implements Amount
     }
 
     /**
-     * @param Amount $amount
+     * @return AmountSegment[]
+     */
+    public function getSegments(): array
+    {
+        return $this->segments;
+    }
+
+    /**
+     * @param SegmentedAmount $amount
      *
      * @throws \InvalidArgumentException
      */
     public function increment(Amount $amount): void
     {
         if (false === $amount instanceof self) {
-            throw new \InvalidArgumentException('Segmented amount can only be altered by a segmented amount');
+            throw new \InvalidArgumentException('Segmented amount can only be incremented by a segmented amount');
         }
 
-        $this->segments += $amount->segments;
+        $this->segments = array_merge($this->segments, $amount->getSegments());
     }
 
     /**
-     * @inheritdoc
+     * @param SegmentedAmount $amount
+     *
+     * @throws \InvalidArgumentException
      */
     public function decrement(Amount $amount): void
     {
         if (false === $amount instanceof self) {
-            throw new \InvalidArgumentException('Segmented amount can only be altered by a segmented amount');
+            throw new \InvalidArgumentException('Segmented amount can only be decremented by a segmented amount');
         }
 
-        die('decrement segmented amount');
+        if ($this->getTotal() < $amount->getTotal()) {
+            throw new \InvalidArgumentException('Insufficient funds');
+        }
+
+        $removeSegments = [];
+        foreach ($amount->getSegments() as $segment) {
+            while ($segment->amount > 0) {
+                foreach ($this->segments as $idx => $ownSegment) {
+                    if ($segment->amount <= $ownSegment->amount) {
+                        $ownSegment->amount -= $segment->amount;
+                        $segment->amount = 0;
+
+                        if ($ownSegment->amount <= 0) {
+                            $removeSegments[] = $idx;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

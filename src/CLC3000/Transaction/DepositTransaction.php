@@ -13,15 +13,18 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000\Transaction;
 
+use Dkarlovi\CLC3000\Amount;
 use Dkarlovi\CLC3000\Order;
 use Dkarlovi\CLC3000\Transaction;
 
 /**
- * Class SimpleTransaction.
+ * Class DepositTransaction.
  */
-class BasicTransaction implements Transaction
+class DepositTransaction implements Transaction
 {
-    use TransactionTrait;
+    use TransactionTrait {
+        getWithdrawalAmount as private _getWithdrawalAmount;
+    }
 
     /**
      * @var string
@@ -34,15 +37,9 @@ class BasicTransaction implements Transaction
     private $time;
 
     /**
-     * @var float
-     */
-    private $price;
-
-    /**
      * @param string             $id
      * @param Order              $order
      * @param \DateTimeInterface $time
-     * @param float              $price
      * @param float              $cost
      * @param float              $fee
      * @param float              $volume
@@ -51,7 +48,6 @@ class BasicTransaction implements Transaction
         string $id,
         Order $order,
         \DateTimeInterface $time,
-        float $price,
         float $cost,
         float $fee,
         float $volume
@@ -59,14 +55,13 @@ class BasicTransaction implements Transaction
         $this->id = $id;
         $this->order = $order;
         $this->time = $time;
-        $this->price = $price;
         $this->cost = $cost;
         $this->fee = $fee;
         $this->volume = $volume;
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getId(): string
     {
@@ -74,15 +69,23 @@ class BasicTransaction implements Transaction
     }
 
     /**
-     * @return bool
+     * @inheritdoc
      */
     public function isWithdrawalTransaction(): bool
     {
-        return true;
+        return false;
     }
 
     /**
-     * @return bool
+     * @inheritdoc
+     */
+    public function getWithdrawalAmount(): Amount
+    {
+        throw new \RuntimeException('Not a withdrawal transaction');
+    }
+
+    /**
+     * @inheritdoc
      */
     public function isDepositTransaction(): bool
     {

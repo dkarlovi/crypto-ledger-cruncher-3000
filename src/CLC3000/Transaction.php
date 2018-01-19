@@ -24,9 +24,19 @@ interface Transaction
     public function getId(): string;
 
     /**
+     * @return bool
+     */
+    public function isWithdrawalTransaction(): bool;
+
+    /**
      * @return Amount
      */
     public function getWithdrawalAmount(): Amount;
+
+    /**
+     * @return bool
+     */
+    public function isDepositTransaction(): bool;
 
     /**
      * @return Amount

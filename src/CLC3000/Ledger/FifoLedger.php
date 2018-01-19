@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Dkarlovi\CLC3000\Ledger;
 
 use Dkarlovi\CLC3000\Asset;
-use Dkarlovi\CLC3000\File\File;
 use Dkarlovi\CLC3000\Ledger;
 use Dkarlovi\CLC3000\Loader;
 use Dkarlovi\CLC3000\Order;
@@ -47,31 +46,23 @@ class FifoLedger implements Ledger
     public function __construct(Loader $loader)
     {
         $this->loader = $loader;
-
-        // dummy initial state
-        $btcWallet = new Wallet\BasicWallet(new Asset\CryptoAsset(Asset::CRYPTO_BTC));
-        $btcWallet->deposit(new Wallet\Amount\SegmentedAmount([
-            // bought 0.07462 BTC for 100 EUR
-            new Wallet\Amount\AmountSegment(0.07462, 100.0),
-        ]));
-        $this->wallets[Asset::CRYPTO_BTC] = $btcWallet;
     }
 
     /**
-     * @param File $file
+     * @param mixed $source
      *
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      */
-    public function load(File $file): void
+    public function load($source): void
     {
-        $this->loader->load($file, [$this, 'addTransactionFromLoaderSpec']);
+        $this->loader->load($source, [$this, 'addTransactionFromLoaderSpec']);
     }
 
     /**
      * @return Wallet[]
      */
-    public function getStatus(): array
+    public function getWallets(): array
     {
         return array_values($this->wallets);
     }
@@ -90,7 +81,7 @@ class FifoLedger implements Ledger
             $type = $spec[Loader::ORDER_TYPE];
             $pair = $spec[Loader::ORDER_PAIR];
 
-            $this->orders[$id] = new $class($id, $type, $pair);
+            $this->orders[$id] = new $class($id, $pair, $type);
         }
 
         $order = $this->orders[$id];
@@ -108,50 +99,101 @@ class FifoLedger implements Ledger
     private function adjustWallets(Order $order, Transaction $transaction)
     {
         $pair = $order->getPair();
-        $fromAsset = $pair->getFrom();
         $toWallet = $this->getWallet($pair->getTo(), true);
 
         switch (\get_class($order)) {
+            case Order\DepositOrder::class:
+                $fiatAsset = $pair->getTo();
+                $fiatAmount = $transaction->getDepositAmount();
+                $cryptoAsset = $pair->getTo();
+                $cryptoAmount = $transaction->getDepositAmount();
+                $description = 'depositing';
+                break;
             case Order\BuyOrder::class:
-                try {
-                    $fromWallet = $this->getWallet($fromAsset);
-                } catch (\RuntimeException $exception) {
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'TX %1$s: buying %2$s %3$s: %4$s',
-                            $transaction->getId(),
-                            $transaction->getDepositAmount()->getTotal(),
-                            $fromAsset->getCode(),
-                            $exception->getMessage()
-                        ),
-                        0,
-                        $exception
-                    );
-                }
+                $fiatAsset = $pair->getFrom();
+                $fiatAmount = $transaction->getWithdrawalAmount();
+                $cryptoAsset = $pair->getTo();
+                $cryptoAmount = $transaction->getDepositAmount();
+                $description = 'buying';
                 break;
             case Order\SellOrder::class:
-                try {
-                    $fromWallet = $this->getWallet($pair->getFrom());
-                } catch (\RuntimeException $exception) {
-                    throw new \InvalidArgumentException(
-                        sprintf(
-                            'TX %1$s: selling %2$s %3$s: %4$s',
-                            $transaction->getId(),
-                            $transaction->getWithdrawalAmount()->getTotal(),
-                            $fromAsset->getCode(),
-                            $exception->getMessage()
-                        ),
-                        0,
-                        $exception
-                    );
-                }
+                $fiatAsset = $pair->getTo();
+                $fiatAmount = $transaction->getDepositAmount();
+                $cryptoAsset = $pair->getFrom();
+                $cryptoAmount = $transaction->getWithdrawalAmount();
+                $description = 'selling';
                 break;
             default:
-                throw new \InvalidArgumentException('Unknown order type');
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'TX %1$s: invalid transaction type "%2$s"',
+                        $transaction->getId(),
+                        \get_class($order)
+                    )
+                );
         }
 
-        $fromWallet->withdraw($transaction->getWithdrawalAmount());
-        $toWallet->deposit($transaction->getDepositAmount());
+        $fromAsset = $pair->getFrom();
+        try {
+            $fromWallet = $this->getWallet($fromAsset);
+        } catch (\RuntimeException $exception) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'TX %1$s: %2$s %3$s %4$s for %5$s %6$s: %7$s',
+                    $transaction->getId(),
+                    $description,
+                    $cryptoAsset->getCode(),
+                    $cryptoAmount->getTotal(),
+                    $fiatAsset->getCode(),
+                    $fiatAmount->getTotal(),
+                    $exception->getMessage()
+                ),
+                0,
+                $exception
+            );
+        }
+
+        if ($transaction->isWithdrawalTransaction()) {
+            try {
+                $fromWallet->withdraw($transaction->getWithdrawalAmount());
+            } catch (\RuntimeException $exception) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'TX %1$s: withdraw failed when %2$s %3$s %4$s for %5$s %6$s: %7$s',
+                        $transaction->getId(),
+                        $description,
+                        $cryptoAsset->getCode(),
+                        $cryptoAmount->getTotal(),
+                        $fiatAsset->getCode(),
+                        $fiatAmount->getTotal(),
+                        $exception->getMessage()
+                    ),
+                    0,
+                    $exception
+                );
+            }
+        }
+
+        if ($transaction->isDepositTransaction()) {
+            try {
+                $toWallet->deposit($transaction->getDepositAmount());
+            } catch (\RuntimeException $exception) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'TX %1$s: deposit failed when %2$s %3$s %4$s for %5$s %6$s: %7$s',
+                        $transaction->getId(),
+                        $description,
+                        $cryptoAsset->getCode(),
+                        $cryptoAmount->getTotal(),
+                        $fiatAsset->getCode(),
+                        $fiatAmount->getTotal(),
+                        $exception->getMessage()
+                    ),
+                    0,
+                    $exception
+                );
+            }
+        }
     }
 
     /**
@@ -170,7 +212,11 @@ class FifoLedger implements Ledger
                 throw new \RuntimeException(sprintf('Fetching an non-existing %1$s wallet', $code));
             }
 
-            $this->wallets[$code] = new Wallet\BasicWallet($asset);
+            if ($asset instanceof Asset\CryptoAsset) {
+                $this->wallets[$code] = new Wallet\SegmentedWallet($asset);
+            } else {
+                $this->wallets[$code] = new Wallet\BasicWallet($asset);
+            }
         }
 
         return $this->wallets[$code];

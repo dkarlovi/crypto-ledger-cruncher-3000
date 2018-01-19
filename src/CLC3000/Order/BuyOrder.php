@@ -25,13 +25,13 @@ class BuyOrder implements Order
 
     /**
      * @param string    $id
-     * @param string    $type
      * @param AssetPair $pair
+     * @param string    $type
      */
-    public function __construct(string $id, string $type, AssetPair $pair)
+    public function __construct(string $id, AssetPair $pair, string $type)
     {
         $this->id = $id;
-        $this->type = $type;
         $this->pair = $pair;
+        $this->type = $type;
     }
 }

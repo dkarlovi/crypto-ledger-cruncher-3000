@@ -13,20 +13,18 @@ declare(strict_types=1);
 
 namespace Dkarlovi\CLC3000;
 
-use Dkarlovi\CLC3000\File\File;
-
 /**
  * Interface Ledger.
  */
 interface Ledger
 {
     /**
-     * @param File $file
+     * @param mixed $source
      */
-    public function load(File $file): void;
+    public function load($source): void;
 
     /**
      * @return Wallet[]
      */
-    public function getStatus(): array;
+    public function getWallets(): array;
 }

@@ -15,11 +15,12 @@ namespace Dkarlovi\CLC3000\Wallet;
 
 use Dkarlovi\CLC3000\Asset;
 use Dkarlovi\CLC3000\Wallet;
+use Dkarlovi\CLC3000\Wallet\Amount\SegmentedAmount;
 
 /**
- * Class BasicWallet.
+ * Class SegmentedWallet.
  */
-class BasicWallet implements Wallet
+class SegmentedWallet implements Wallet
 {
     use WalletTrait;
 
@@ -29,6 +30,6 @@ class BasicWallet implements Wallet
     public function __construct(Asset $asset)
     {
         $this->asset = $asset;
-        $this->amount = new Wallet\Amount\BasicAmount(0);
+        $this->amount = new SegmentedAmount([]);
     }
 }
